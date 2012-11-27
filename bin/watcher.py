@@ -27,6 +27,7 @@ import datetime
 import subprocess
 import shlex
 import re
+import threading
 from types import *
 from string import Template
 from yaml import load, dump # load is for read yaml, dump is for writing
@@ -36,7 +37,7 @@ try:
 except ImportError:
     from yaml import Loader, Dumper
 
-import multiprocessing
+
 
 RECENTLY_UPDATED_FOLDERS = {}
 
@@ -45,6 +46,28 @@ def _stdlog(message, dest = 'stderr'):
  output = "%s: %s" % (datetime.datetime.now(), message, )
  if dest == 'stderr': sys.stderr.write(output)
  elif dest == 'stdout': sys.stdout.write(output)
+
+def check_library_updates(self):
+
+    print("UpdateLibrary is running")
+
+    while True:
+        remove_folders = []
+
+        print("Checking for recently updated folders...")
+        print(RECENTLY_UPDATED_FOLDERS)
+
+        # Check for recent updates
+        for folder, ctime in RECENTLY_UPDATED_FOLDERS.iteritems():
+            if ctime > time.time():
+                print("At this point we should update '%s'" % (folder, ))
+                remove_folders.append(folder)
+
+        for folder in remove_folders:
+            del RECENTLY_UPDATED_FOLDERS[folder]
+
+        time.sleep(60)
+
 
 class Daemon:
     """
@@ -306,6 +329,9 @@ class WatcherDaemon(Daemon):
         self.wdds = []
         self.notifiers = []
 
+        recently_updated_thread = threading.Thread(target=check_library_updates, args=())
+        recently_updated_thread.start()
+
         # parse jobs.yml and add_watch/notifier for each entry
         print jobs_file
         #_stdlog(jobs_file, 'stdlog')
@@ -405,35 +431,13 @@ class WatcherDaemon(Daemon):
             return current_options | new_option
 
 
-class UpdateLibrary(multiprocessing.Process):
 
-    def run(self):
-
-        print("UpdateLibrary is running")
-
-        while True:
-            remove_folders = []
-
-            print("Checking for recently updated folders...")
-            print(RECENTLY_UPDATED_FOLDERS)
-
-            # Check for recent updates
-            for folder, ctime in RECENTLY_UPDATED_FOLDERS.iteritems():
-                if ctime > time.time():
-                    print("At this point we should update '%s'" % (folder, ))
-                    remove_folders.append(folder)
-
-            for folder in remove_folders:
-                del RECENTLY_UPDATED_FOLDERS[folder]
-
-            time.sleep(60)
 
 
 
 if __name__ == "__main__":
     #log = '/var/xbmc/log/watcher'
     log = _prefix+'/log/watcher'
-    recently_updated_log = _prefix + '/log/recently_updated'
     # create the log
     f = open(log, 'a+')
     f.close()
@@ -445,35 +449,26 @@ if __name__ == "__main__":
 
     try:
         # TODO: make stdout and stderr neutral location
-        update_library_daemon = UpdateLibrary()
         daemon = WatcherDaemon(_prefix+'/watcher.pid', stdout=log, stderr=log)
         
         if len(sys.argv) == 2:
             if 'start' == sys.argv[1]:
                 f = open(log, 'a+')
                 f.close()
-                #update_library_daemon.wants_abort = False
-                update_library_daemon.start()
+                
                 daemon.start()
 
             elif 'stop' == sys.argv[1]:
                 #os.remove(log)
                 
-                #update_library_daemon.wants_abort = True
-                #update_library_daemon.join()
                 daemon.stop()
 
             elif 'restart' == sys.argv[1]:
                 daemon.restart()
-                #update_library_daemon.wants_abort = True
-                #update_library_daemon.join()
-                #update_library_daemon = UpdateLibrary()
-                #update_library_daemon.wants_abort = False
-                #update_library_daemon.start()
-
+                
             elif 'debug' == sys.argv[1]:
                 daemon.run()
-                update_library_daemon.run()
+                
 
             else:
                 print "Unkown Command"
