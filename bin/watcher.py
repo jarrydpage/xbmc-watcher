@@ -47,11 +47,11 @@ def _stdlog(message, dest = 'stderr'):
  if dest == 'stderr': sys.stderr.write(output)
  elif dest == 'stdout': sys.stdout.write(output)
 
-def check_library_updates(self, stdout):
+def check_library_updates(stdout):
 
     with open(stdout, 'w') as fp:
         fp.write("Hi ginger.")
-        
+
     print("UpdateLibrary is running")
 
     while True:
