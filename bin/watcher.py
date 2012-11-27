@@ -47,29 +47,26 @@ def _stdlog(message, dest = 'stderr'):
  if dest == 'stderr': sys.stderr.write(output)
  elif dest == 'stdout': sys.stdout.write(output)
 
-def check_library_updates(stdout):
+def check_library_updates():
 
-    with open(stdout, 'w') as fp:
-        
+    print("Check library is running..")
 
-        fp.write("UpdateLibrary is running\n")
+    while True:
+        remove_folders = []
 
-        for i in xrange(3):
-            remove_folders = []
+        print("Checking for recently updated folders...\n")
+        print(RECENTLY_UPDATED_FOLDERS)
 
-            fp.write("Checking for recently updated folders...\n")
-            fp.write(RECENTLY_UPDATED_FOLDERS)
+        # Check for recent updates
+        for folder, ctime in RECENTLY_UPDATED_FOLDERS.iteritems():
+            if ctime > time.time():
+                print("At this point we should update '%s'\n" % (folder, ))
+                remove_folders.append(folder)
 
-            # Check for recent updates
-            for folder, ctime in RECENTLY_UPDATED_FOLDERS.iteritems():
-                if ctime > time.time():
-                    fp.write("At this point we should update '%s'\n" % (folder, ))
-                    remove_folders.append(folder)
+        for folder in remove_folders:
+            del RECENTLY_UPDATED_FOLDERS[folder]
 
-            for folder in remove_folders:
-                del RECENTLY_UPDATED_FOLDERS[folder]
-
-            time.sleep(60)
+        time.sleep(60)
 
 
 class Daemon:
@@ -332,7 +329,7 @@ class WatcherDaemon(Daemon):
         self.wdds = []
         self.notifiers = []
 
-        recently_updated_thread = threading.Thread(target=check_library_updates, args=(dir + '/recently_updated.log', ))
+        recently_updated_thread = threading.Thread(target=check_library_updates)
         recently_updated_thread.start()
 
         # parse jobs.yml and add_watch/notifier for each entry
