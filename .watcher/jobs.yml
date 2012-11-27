@@ -1,0 +1,13 @@
+movies:
+ label: Movies
+ watch: /BFS/Movies
+ events: ['create', 'write_close', 'delete', 'move']
+ recursive: true
+ command: /usr/bin/perl /usr/xbmc/bin/libupdate.pl "$filename" $tflags
+
+tv:
+ label: TV
+ watch: "/BFS/TV Shows"
+ events: ['create', 'write_close', 'delete', 'move']
+ recursive: true
+ command: /usr/bin/perl /usr/xbmc/bin/libupdate.pl "$filename" $tflags
