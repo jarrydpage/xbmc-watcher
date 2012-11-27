@@ -411,7 +411,7 @@ class UpdateLibrary(multiprocessing.Process):
 
         print("UpdateLibrary is running")
 
-        while not self.wants_abort:
+        while True:
             remove_folders = []
 
             print("Checking for recently updated folders...")
@@ -452,24 +452,24 @@ if __name__ == "__main__":
             if 'start' == sys.argv[1]:
                 f = open(log, 'a+')
                 f.close()
-                update_library_daemon.wants_abort = False
+                #update_library_daemon.wants_abort = False
                 update_library_daemon.start()
                 daemon.start()
 
             elif 'stop' == sys.argv[1]:
                 #os.remove(log)
                 
-                update_library_daemon.wants_abort = True
-                update_library_daemon.join()
+                #update_library_daemon.wants_abort = True
+                #update_library_daemon.join()
                 daemon.stop()
 
             elif 'restart' == sys.argv[1]:
                 daemon.restart()
-                update_library_daemon.wants_abort = True
-                update_library_daemon.join()
-                update_library_daemon = UpdateLibrary()
-                update_library_daemon.wants_abort = False
-                update_library_daemon.start()
+                #update_library_daemon.wants_abort = True
+                #update_library_daemon.join()
+                #update_library_daemon = UpdateLibrary()
+                #update_library_daemon.wants_abort = False
+                #update_library_daemon.start()
 
             elif 'debug' == sys.argv[1]:
                 daemon.run()
