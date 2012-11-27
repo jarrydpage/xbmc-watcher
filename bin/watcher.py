@@ -215,6 +215,8 @@ class EventHandler(pyinotify.ProcessEvent):
         
         # get the directory from command
         directory = os.path.dirname(' '.join(command.split()[2:-1]))
+        directory = directory[1:-1] if directory.endswith('"') and directory.startswith('"') else directory
+
 
         # Update the dictionary with ctime + 60
         print("Set an update time on '%s' for 60 seconds from now" % (directory, ))
@@ -403,7 +405,7 @@ class WatcherDaemon(Daemon):
             return current_options | new_option
 
 
-class UpdateLibrary(multiprocessing.Thread):
+class UpdateLibrary(multiprocessing.Process):
 
     def run(self):
 
@@ -443,22 +445,23 @@ if __name__ == "__main__":
 
     try:
         # TODO: make stdout and stderr neutral location
-        daemon = WatcherDaemon(_prefix+'/watcher.pid', stdout=log, stderr=log)
         update_library_daemon = UpdateLibrary()
-
+        daemon = WatcherDaemon(_prefix+'/watcher.pid', stdout=log, stderr=log)
+        
         if len(sys.argv) == 2:
             if 'start' == sys.argv[1]:
                 f = open(log, 'a+')
                 f.close()
-                daemon.start()
                 update_library_daemon.wants_abort = False
                 update_library_daemon.start()
+                daemon.start()
 
             elif 'stop' == sys.argv[1]:
                 #os.remove(log)
-                daemon.stop()
+                
                 update_library_daemon.wants_abort = True
                 update_library_daemon.join()
+                daemon.stop()
 
             elif 'restart' == sys.argv[1]:
                 daemon.restart()
