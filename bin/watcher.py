@@ -406,7 +406,7 @@ class UpdateLibrary(Daemon):
 
     def run(self):
 
-        while not self.abort_wanted:
+        while True:
             remove_folders = []
 
             print("Checking for recently updated folders...")
