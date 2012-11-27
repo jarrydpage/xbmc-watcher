@@ -50,26 +50,26 @@ def _stdlog(message, dest = 'stderr'):
 def check_library_updates(stdout):
 
     with open(stdout, 'w') as fp:
-        fp.write("Hi ginger.")
+        
 
-    print("UpdateLibrary is running")
+        fp.write("UpdateLibrary is running\n")
 
-    while True:
-        remove_folders = []
+        for i in xrange(3):
+            remove_folders = []
 
-        print("Checking for recently updated folders...")
-        print(RECENTLY_UPDATED_FOLDERS)
+            fp.write("Checking for recently updated folders...\n")
+            fp.write(RECENTLY_UPDATED_FOLDERS)
 
-        # Check for recent updates
-        for folder, ctime in RECENTLY_UPDATED_FOLDERS.iteritems():
-            if ctime > time.time():
-                print("At this point we should update '%s'" % (folder, ))
-                remove_folders.append(folder)
+            # Check for recent updates
+            for folder, ctime in RECENTLY_UPDATED_FOLDERS.iteritems():
+                if ctime > time.time():
+                    fp.write("At this point we should update '%s'\n" % (folder, ))
+                    remove_folders.append(folder)
 
-        for folder in remove_folders:
-            del RECENTLY_UPDATED_FOLDERS[folder]
+            for folder in remove_folders:
+                del RECENTLY_UPDATED_FOLDERS[folder]
 
-        time.sleep(60)
+            time.sleep(60)
 
 
 class Daemon:
