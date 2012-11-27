@@ -36,6 +36,7 @@ try:
 except ImportError:
     from yaml import Loader, Dumper
 
+
 _prefix = '/usr/xbmc'
 def _stdlog(message, dest = 'stderr'): 
  output = "%s: %s" % (datetime.datetime.now(), message, )
@@ -209,6 +210,13 @@ class EventHandler(pyinotify.ProcessEvent):
                 'src_path': src_path
                 })
         
+        # get the directory from command
+        directory = os.path.dirname(' '.join(command.split()[2:-1]))
+
+        # Update the dictionary with ctime + 60
+        print("Set an update time on '%s' for 60 seconds from now" % (directory, ))
+        RECENTLY_UPDATED_FOLDERS.update(directory, time.time() + 60)
+
         #try the command
         try:
             print("COMMAND: [%s]" % command);
@@ -385,10 +393,35 @@ class WatcherDaemon(Daemon):
         return ret
 
     def _addMask(self, new_option, current_options):
+
         if not current_options:
             return new_option
         else:
             return current_options | new_option
+
+
+class UpdateLibrary(Daemon):
+
+    def run(self):
+
+        while not self.abort_wanted:
+            remove_folders = []
+
+            print("Checking for recently updated folders...")
+            print(RECENTLY_UPDATED_FOLDERS)
+
+            # Check for recent updates
+            for folder, ctime in RECENTLY_UPDATED_FOLDERS.iteritems():
+                if ctime > time.time():
+                    print("At this point we should update '%s'" % (folder, ))
+                    remove_folders.append(folder)
+
+            for folder in remove_folders:
+                del RECENTLY_UPDATED_FOLDERS[folder]
+
+            time.sleep(60)
+
+
 
 if __name__ == "__main__":
     #log = '/var/xbmc/log/watcher'
@@ -396,22 +429,37 @@ if __name__ == "__main__":
     # create the log
     f = open(log, 'a+')
     f.close()
-    #_stdlog("LOL")    
+    #_stdlog("LOL")  
+
+    # Since different threads are handled for each individual event, it's best
+    # just to use a global variable for the udpated folders
+    RECENTLY_UPDATED_FOLDERS = {}
+
     try:
         # TODO: make stdout and stderr neutral location
         daemon = WatcherDaemon(_prefix+'/watcher.pid', stdout=log, stderr=log)
+        update_library_daemon = UpdateLibrary(stdout=log, stderr=log)
+
         if len(sys.argv) == 2:
             if 'start' == sys.argv[1]:
                 f = open(log, 'a+')
                 f.close()
                 daemon.start()
+                update_library_daemon.start()
+
             elif 'stop' == sys.argv[1]:
                 #os.remove(log)
                 daemon.stop()
+                update_library_daemon.stop()
+
             elif 'restart' == sys.argv[1]:
                 daemon.restart()
+                update_library_daemon.restart()
+
             elif 'debug' == sys.argv[1]:
                 daemon.run()
+                update_library_daemon.run()
+
             else:
                 print "Unkown Command"
                 sys.exit(2)
