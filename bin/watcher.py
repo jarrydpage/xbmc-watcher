@@ -217,7 +217,7 @@ class EventHandler(pyinotify.ProcessEvent):
 
         # Update the dictionary with ctime + 60
         print("Set an update time on '%s' for 60 seconds from now" % (directory, ))
-        RECENTLY_UPDATED_FOLDERS.update(directory, time.time() + 60)
+        RECENTLY_UPDATED_FOLDERS[directory] = time.time() + 60
 
         #try the command
         try:
