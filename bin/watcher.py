@@ -440,7 +440,7 @@ if __name__ == "__main__":
     try:
         # TODO: make stdout and stderr neutral location
         daemon = WatcherDaemon(_prefix+'/watcher.pid', stdout=log, stderr=log)
-        update_library_daemon = UpdateLibrary(stdout=log, stderr=log)
+        update_library_daemon = UpdateLibrary(_prefix+'/recently_updated.pid', stdout=log, stderr=log)
 
         if len(sys.argv) == 2:
             if 'start' == sys.argv[1]:
