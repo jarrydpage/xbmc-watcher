@@ -61,6 +61,7 @@ def check_library_updates():
         for folder, ctime in RECENTLY_UPDATED_FOLDERS.iteritems():
             if ctime > time.time():
                 print("At this point we should update '%s'\n" % (folder, ))
+                #os.system("curl on your %s" % (directory, )) JARRYD ITS HERE
                 remove_folders.append(folder)
 
         for folder in remove_folders:
@@ -237,9 +238,7 @@ class EventHandler(pyinotify.ProcessEvent):
                 })
         
         # get the directory from command
-        directory = os.path.dirname(' '.join(command.split()[2:-1]))
-        directory = directory[1:-1] if directory.endswith('"') and directory.startswith('"') else directory
-
+        directory = os.path.dirname(' '.join(command.split()[2:-1])).lstrip('"').rstrip('"').strip()
 
         # Update the dictionary with ctime + 60
         print("Set an update time on '%s' for 60 seconds from now" % (directory, ))
