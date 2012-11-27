@@ -37,6 +37,8 @@ except ImportError:
     from yaml import Loader, Dumper
 
 
+RECENTLY_UPDATED_FOLDERS = {}
+
 _prefix = '/usr/xbmc'
 def _stdlog(message, dest = 'stderr'): 
  output = "%s: %s" % (datetime.datetime.now(), message, )
@@ -433,7 +435,7 @@ if __name__ == "__main__":
 
     # Since different threads are handled for each individual event, it's best
     # just to use a global variable for the udpated folders
-    RECENTLY_UPDATED_FOLDERS = {}
+    
 
     try:
         # TODO: make stdout and stderr neutral location
