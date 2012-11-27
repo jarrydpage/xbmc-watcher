@@ -28,6 +28,7 @@ import subprocess
 import shlex
 import re
 import threading
+import json
 from types import *
 from string import Template
 from yaml import load, dump # load is for read yaml, dump is for writing
@@ -62,6 +63,9 @@ def check_library_updates():
             if ctime > time.time():
                 print("At this point we should update '%s'\n" % (folder, ))
                 #os.system("curl on your %s" % (directory, )) JARRYD ITS HERE
+                data = '{ "jsonrpc": "2.0", "method": "VideoLibrary.Scan", "params":{"directory":"nfs://192.168.1.30%s"}, "id": "xbmc" }' % (folder, )
+                print("JSON '%s'\n" % (data, )) 
+                os.system("curl -s --user xbmc:xbmc --data-binary %s -H \"content-type: application/json;\" http://htpc.network:8080/jsonrpc" % (json.dumps(data), ))
                 remove_folders.append(folder)
 
         for folder in remove_folders:
