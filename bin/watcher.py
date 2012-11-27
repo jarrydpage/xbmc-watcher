@@ -36,6 +36,7 @@ try:
 except ImportError:
     from yaml import Loader, Dumper
 
+import multiprocessing
 
 RECENTLY_UPDATED_FOLDERS = {}
 
@@ -402,13 +403,13 @@ class WatcherDaemon(Daemon):
             return current_options | new_option
 
 
-class UpdateLibrary(Daemon):
+class UpdateLibrary(multiprocessing.Thread):
 
     def run(self):
 
         print("UpdateLibrary is running")
 
-        while True:
+        while not self.wants_abort:
             remove_folders = []
 
             print("Checking for recently updated folders...")
@@ -443,23 +444,29 @@ if __name__ == "__main__":
     try:
         # TODO: make stdout and stderr neutral location
         daemon = WatcherDaemon(_prefix+'/watcher.pid', stdout=log, stderr=log)
-        update_library_daemon = UpdateLibrary(_prefix+'/recently_updated.pid', stdout=recently_updated_log, stderr=recently_updated_log)
+        update_library_daemon = UpdateLibrary()
 
         if len(sys.argv) == 2:
             if 'start' == sys.argv[1]:
                 f = open(log, 'a+')
                 f.close()
                 daemon.start()
+                update_library_daemon.wants_abort = False
                 update_library_daemon.start()
 
             elif 'stop' == sys.argv[1]:
                 #os.remove(log)
                 daemon.stop()
-                update_library_daemon.stop()
+                update_library_daemon.wants_abort = True
+                update_library_daemon.join()
 
             elif 'restart' == sys.argv[1]:
                 daemon.restart()
-                update_library_daemon.restart()
+                update_library_daemon.wants_abort = True
+                update_library_daemon.join()
+                update_library_daemon = UpdateLibrary()
+                update_library_daemon.wants_abort = False
+                update_library_daemon.start()
 
             elif 'debug' == sys.argv[1]:
                 daemon.run()
