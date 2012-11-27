@@ -27,7 +27,6 @@ import datetime
 import subprocess
 import shlex
 import re
-import time
 from types import *
 from string import Template
 from yaml import load, dump # load is for read yaml, dump is for writing
@@ -407,6 +406,8 @@ class UpdateLibrary(Daemon):
 
     def run(self):
 
+        print("UpdateLibrary is running")
+
         while True:
             remove_folders = []
 
@@ -429,6 +430,7 @@ class UpdateLibrary(Daemon):
 if __name__ == "__main__":
     #log = '/var/xbmc/log/watcher'
     log = _prefix+'/log/watcher'
+    recently_updated_log = _prefix + '/log/recently_updated'
     # create the log
     f = open(log, 'a+')
     f.close()
@@ -441,7 +443,7 @@ if __name__ == "__main__":
     try:
         # TODO: make stdout and stderr neutral location
         daemon = WatcherDaemon(_prefix+'/watcher.pid', stdout=log, stderr=log)
-        update_library_daemon = UpdateLibrary(_prefix+'/recently_updated.pid', stdout=log, stderr=log)
+        update_library_daemon = UpdateLibrary(_prefix+'/recently_updated.pid', stdout=recently_updated_log, stderr=recently_updated_log)
 
         if len(sys.argv) == 2:
             if 'start' == sys.argv[1]:
