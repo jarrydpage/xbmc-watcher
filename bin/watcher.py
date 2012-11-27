@@ -47,8 +47,11 @@ def _stdlog(message, dest = 'stderr'):
  if dest == 'stderr': sys.stderr.write(output)
  elif dest == 'stdout': sys.stdout.write(output)
 
-def check_library_updates(self):
+def check_library_updates(self, stdout):
 
+    with open(stdout, 'w') as fp:
+        fp.write("Hi ginger.")
+        
     print("UpdateLibrary is running")
 
     while True:
@@ -329,7 +332,7 @@ class WatcherDaemon(Daemon):
         self.wdds = []
         self.notifiers = []
 
-        recently_updated_thread = threading.Thread(target=check_library_updates, args=())
+        recently_updated_thread = threading.Thread(target=check_library_updates, args=(dir + '/recently_updated.log', ))
         recently_updated_thread.start()
 
         # parse jobs.yml and add_watch/notifier for each entry
